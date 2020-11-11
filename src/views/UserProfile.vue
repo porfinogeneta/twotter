@@ -1,23 +1,24 @@
 <template>
   <div class="user_profile">
     <div class="user_profile__user_panel">
-      <h1 class="user_profile_username">@{{ user.username }}</h1>
-      <div class="user_profile__admin-badge" v-if="user.isAdmin">
+      <h1 class="user_profile_username">@{{ state.user.username }}</h1>
+      <h3>{{ userID }}</h3>
+      <div class="user_profile__admin-badge" v-if="state.user.isAdmin">
         Admin
       </div>
       <div class="user_profile__admin-badge" v-else>
         Not Admin
       </div>
       <div class="user_profile_follower_count">
-        <strong>Followers</strong> {{ followers }}
+        <strong>Followers</strong> {{ state.followers }}
       </div>
-      <CreateTwootPanel @add_twoot="addTwoot"/>
+      <CreateTwootPanel @add-twoot="addTwoot"/>
     </div>
     <div class="user_profile__twoots-wrapper">
       <twootItem
-          v-for="twoot in user.twoots"
+          v-for="twoot in state.user.twoots"
           :key="twoot.id"
-          :username="user.username"
+          :username="state.user.username"
           :twoot="twoot"
           @favourite="toggleFavourite"/>
     </div>
@@ -25,53 +26,51 @@
 </template>
 
 <script>
+import { reactive, watch, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import {users} from "@/assets/users";
 import twootItem from "@/components/twootItem";
 import CreateTwootPanel from "@/components/CreateTwootPanel";
+
 
 
 export default {
   name: 'App',
   components: {CreateTwootPanel, twootItem},
-  data() {
-    return {
-      followers: 0,
+  setup() {
+    const route = useRoute();
+    const userID = computed(() => route.params.userID)
 
-      user: {
-        id: 1,
-        username: 'JohnK',
-        firstName: 'John',
-        lastName: 'Kowalski',
-        email: 'jkowalski@gmail.com',
-        isAdmin: true,
-        twoots: [
-          { id: 1, content: "Twotter is amazing"},
-          { id: 2, content: "Twotter is bad"},
-        ]
-      },
+    const state = reactive({
+      followers: 0,
+      user: users[userID.value - 1] || users[0]
+    })
+    function addFollowers() {
+      state.followers ++;
     }
-  },
-  watch: {
-    followers(new_FollowerCount, old_FollowerCount) {
-      if (old_FollowerCount < new_FollowerCount) {
-        console.log(`${this.user.username} has gained a follower`)
-      }
-    }
-  },
-  methods: {
-    addFollowers() {
-      this.followers ++;
-    },
-    toggleFavourite(id) {
+    function toggleFavourite(id) {
       console.log(`Favourited twoot ${id}`)
-    },
-    addTwoot(twoot) {
-      this.user.twoots.unshift({id: this.user.twoots.length + 1, content: twoot});
     }
-  },
-  mounted() {
-    this.addFollowers()
+    function addTwoot(twoot) {
+      state.user.twoots.unshift({id: state.user.twoots.length + 1, content: twoot});
+    }
+    watch(() => state.followers, (new_FollowerCount, old_FollowerCount) => {
+      if (old_FollowerCount < new_FollowerCount) {
+        console.log(`${state.user.username} has gained a follower`)
+      }
+    })
+
+    return {
+      state,
+      addFollowers,
+      toggleFavourite,
+      addTwoot,
+      userID
+    }
   }
-}
+};
+
+
 </script>
 
 <style lang="scss" scoped>

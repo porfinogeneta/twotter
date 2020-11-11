@@ -6,7 +6,7 @@
         <div class="user_profile__create_twoot__type">
           <label for="newTwootType"><strong>Type: </strong></label>
           <select id="newTwootType" v-model="state.selectedTwootType">
-            <option :value="option.value" v-for="(option, index) in state.TwootTypes" :key="index">
+            <option :value="option.value" v-for="(option, index) in state.twootTypes" :key="index">
               {{ option.name }}
             </option>
           </select>
@@ -23,7 +23,7 @@ import { reactive, computed } from 'vue';
 export default {
   name: "CreateTwootPanel",
 
-  setup() {
+  setup(props, context) {
     const state = reactive({
       newTwootContent: '',
       selectedTwootType: 'instant',
@@ -34,17 +34,17 @@ export default {
     })
     const newTwootCharacterCount = computed(() => state.newTwootContent.length)
 
-    // function createNewTwoot() {
-    //   if (state.newTwootContent && state.selectedTwootType !== 'draft') {
-    //     ctx.emit('add-twoot', state.newTwootContent);
-    //     state.newTwootContent = '';
-    //   }
-    // }
+    function createNewTwoot() {
+      if (state.newTwootContent && state.selectedTwootType !== 'draft') {
+        context.emit('add-twoot', state.newTwootContent);
+        state.newTwootContent = '';
+      }
+    }
 
     return {
       state,
       newTwootCharacterCount,
-      // createNewTwoot
+      createNewTwoot
     }
   }
 };
